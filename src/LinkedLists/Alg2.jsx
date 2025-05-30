@@ -11,13 +11,13 @@ const MergeKLinkedList = () => {
   const [steps, setSteps] = useState([]);
   const [headArray, setHeadArray] = useState([]);
   const minHeap = useRef(createMinHeap());
-  const [heapSnapShot , setHeapSnapShot] = useState([]);
 
   const createVisualizationSteps = (headArray) => {
+    minHeap.current = createMinHeap();
+    
     for(let head of headArray){
       if(head) minHeap.current.insert(head);
     }
-    setHeapSnapShot(minHeap.current.getHeap());
 
     return steps;
   }
@@ -32,12 +32,8 @@ const MergeKLinkedList = () => {
   };
 
   useEffect(() => {
-    const steps = createVisualizationSteps(headArray);
-    setSteps(steps);
-    if (steps.length > 0) {
-      setHeapSnapShot(steps[0]);
-    }
-  }, [headArray]);
+    createVisualizationSteps(headArray);
+  }, [headArray] );
 
 
   const currentStepData = {};
@@ -129,7 +125,7 @@ const MergeKLinkedList = () => {
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
             <h4 className="text-xl font-semibold text-gray-800 mb-4">Min Heap</h4>
             <div className="flex gap-4 flex-wrap">
-              {heapSnapShot.map((node, index) => (
+              {minHeap.current.getHeap().map((node, index) => (
                 <div
                   key={index}
                   className="px-4 py-2 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg shadow"
