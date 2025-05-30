@@ -4,18 +4,18 @@ import App from './App.jsx'
 import PalindromeOfAList from './LinkedLists/Alg1.jsx'
 import MergeKLinkedList from './LinkedLists/Alg2.jsx'
 import LinkedList from './LinkedLists/LinkedList.jsx'
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { createHashRouter, RouterProvider } from "react-router-dom"
 
-const router = createBrowserRouter([
+// Use createHashRouter instead of createBrowserRouter
+const router = createHashRouter([
   { path: "/", element: <App /> },
   { path: "/LinkedList", element: <LinkedList /> },
   { path: "/LinkedList/palindromeOfAList", element: <PalindromeOfAList /> },
   { path: "/LinkedList/mergeKLinkedList", element: <MergeKLinkedList /> }
-],
-  {
-    basename: "/algo-visuals"
-  }
-);
+]);
+
 createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router} />
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>
 )
