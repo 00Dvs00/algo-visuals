@@ -7,7 +7,7 @@ import LinkedList from './LinkedLists/LinkedList.jsx'
 import {createBrowserRouter,RouterProvider} from "react-router-dom"
 
 const router = createBrowserRouter([
-  {path:"/", element: <App/>},
+  {path:"/algo-visuals/", element: <App/>},
   {path:"/LinkedList", element: <LinkedList />},
   {path:"/LinkedList/palindromeOfAList", element: <PalindromeOfAList />},
   {path:"/LinkedList/mergeKLinkedList", element: <MergeKLinkedList />}
