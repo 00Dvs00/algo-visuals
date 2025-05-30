@@ -4,7 +4,7 @@ function LinkedList(){
     <>
       <Link to={"/LinkedList/palindromeOfAList"}>Palindrome of a Linked List</Link>
       <br />
-      <Link to={"/LinkedList/MergeKLinkedList"}>Merge K Linked List</Link>
+      <Link to={"/LinkedList/mergeKLinkedList"}>Merge K Linked List</Link>
     </>
   );
 }
