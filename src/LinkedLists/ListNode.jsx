@@ -3,6 +3,13 @@ export class ListNode {
     this.val = val;
     this.next = next;
   }
+  add(val) {
+    let current = this;
+    while (current.next !== null) {
+      current = current.next;
+    }
+    current.next = new ListNode(val);
+  }
 }
 
 export const createLinkedList = (values) => {

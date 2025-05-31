@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import LinkedListVisualizer from "./LinkedListVisualizer";
 import { createMinHeap } from "./MinHeap";
-import { createLinkedList } from "./ListNode";
+import { ListNode, createLinkedList } from "./ListNode";
 
 const MergeKLinkedList = () => {
-  const [inputValues, setInputValues] = useState('1,4,5');
+  const [inputValues, setInputValues] = useState('');
   const [currentStep, setCurrentStep] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [listCount, setListCount] = useState(1);
@@ -13,30 +13,88 @@ const MergeKLinkedList = () => {
   const minHeap = useRef(createMinHeap());
 
   const createVisualizationSteps = (headArray) => {
-    minHeap.current = createMinHeap();
-    
-    for(let head of headArray){
-      if(head) minHeap.current.insert(head);
-    }
+    let stepCount = 0;
+    let dummy = new ListNode();
 
+    headArray.forEach((head,index) => {
+      if(head){
+        steps.push({
+          id: stepCount++,
+          list: head,
+          highlightNodes: [0],
+          pointers: {"head" : 0},
+          resultHead : dummy.next,
+        });
+      }
+    });
     return steps;
   }
 
   const handleCreateList = () => {
     const values = inputValues.split(',').map(v => parseInt(v.trim())).filter(v => !isNaN(v));
     const head = createLinkedList(values);
-    setHeadArray(prev => [...prev, head]);
+    setHeadArray(prev => {
+      const updated = [...prev, head];
+      const steps = createVisualizationSteps(updated);
+      setSteps(steps);
+      setCurrentStep(0);
+      return updated;
+    });
     setListCount(prev => prev + 1);
-    setCurrentStep(0);
     setIsPlaying(false);
   };
 
+  const handleResetLists = () => {
+    setHeadArray([]);
+    setSteps([]);
+    setCurrentStep(0);
+    setListCount(1);
+    setIsPlaying(false);
+    minHeap.current = createMinHeap();
+  };
+
+  const nextStep = () => {
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const playAnimation = () => {
+    setIsPlaying(true);
+    const interval = setInterval(() => {
+      setCurrentStep(prev => {
+        if (prev >= steps.length - 1) {
+          setIsPlaying(false);
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 2000);
+  };
+
   useEffect(() => {
-    createVisualizationSteps(headArray);
-  }, [headArray] );
+    const defaultLists = [
+      [1, 4, 5],
+      [1, 3, 4],
+      [2, 6],
+    ];
 
+    const defaultHeads = defaultLists.map(values => createLinkedList(values));
+    setHeadArray(defaultHeads);
+    const steps = createVisualizationSteps(defaultHeads);
+    setSteps(steps);
+    setListCount(defaultLists.length + 1);
+    setCurrentStep(0);
+  }, []);
 
-  const currentStepData = {};
+  const currentStepData = steps[currentStep] || {};
 
   return (
     <>
@@ -77,24 +135,31 @@ const MergeKLinkedList = () => {
               </button>
 
               <button
-                /* onClick={prevStep} */
-                /* disabled={currentStep === 0} */
+                onClick={handleResetLists}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium"
+              >
+                Delete All Lists
+              </button>
+
+              <button
+                onClick={prevStep}
+                disabled={currentStep === 0}
                 className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
               >
                 Previous
               </button>
 
               <button
-                /* onClick={nextStep}
-                disabled={currentStep >= steps.length - 1} */
+                onClick={nextStep}
+                disabled={currentStep >= steps.length - 1}
                 className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
               >
                 Next
               </button>
 
               <button
-                /* onClick={playAnimation}
-                disabled={isPlaying} */
+                onClick={playAnimation}
+                disabled={isPlaying}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed transition-colors duration-200 font-medium"
               >
                 {isPlaying ? 'Playing...' : 'Play Animation'}
@@ -110,12 +175,12 @@ const MergeKLinkedList = () => {
 
           <div className="grid md:grid-cols-3 gap-6">
             {
-              headArray.map((head,index) => (
+              headArray.map((head, index) => (
                 <div key={index} className="bg-gray-50 rounded-lg p-4">
                   <LinkedListVisualizer
                     list={head}
-                    highlightNodes={[]}
-                    pointers={{}}
+                    highlightNodes={currentStepData.highlightNodes}
+                    pointers={currentStepData.pointers}
                   />
                 </div>
               ))
@@ -140,7 +205,7 @@ const MergeKLinkedList = () => {
           <div className="bg-gray-50 rounded-lg p-4">
             <h5 className="text-lg font-medium">Result</h5>
             <LinkedListVisualizer
-              list={currentStepData.list}
+              list={currentStepData.resultHead}
               highlightNodes={currentStepData.highlightNodes}
               pointers={currentStepData.pointers}
             />
