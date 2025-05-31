@@ -1,12 +1,12 @@
-import Dashboard from "./dashboard" 
-import "./App.css" 
+import "./App.css";
+import { Link } from "react-router-dom";
 
 function App() {
-  return(
+  return (
     <>
-      <Dashboard />
+      <Link to="/LinkedList">LinkedList</Link>
     </>
   );
 }
 
-export default App
+export default App;
