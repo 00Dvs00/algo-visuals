@@ -18,6 +18,7 @@ const LinkedListVisualizer = ({ list, highlightNodes = [], pointers = {} }) => {
           showArrow={current.next !== null}
           highlight={isHighlighted}
           label={label}
+          arrowDirection={''}
         />
       );
       
