@@ -1,4 +1,4 @@
-import{j as e}from"./index-DO2szRq0.js";const u=({value:s,showArrow:t=!0,highlight:r=!1,label:n,arrowDirection:d="normal",isNull:i=!1})=>e.jsxs("div",{className:"flex items-center m-1",children:[e.jsxs("div",{className:"relative",children:[n&&e.jsx("div",{className:`\r
+import{j as e}from"./index-DPMaJI5j.js";const u=({value:s,showArrow:t=!0,highlight:r=!1,label:n,arrowDirection:d="normal",isNull:i=!1})=>e.jsxs("div",{className:"flex items-center m-1",children:[e.jsxs("div",{className:"relative",children:[n&&e.jsx("div",{className:`\r
           absolute bottom-full left-1/2 -translate-x-1/2\r
           text-xs text-center mb-1 font-semibold text-blue-600\r
           w-max max-w-24`,children:n}),e.jsx("div",{className:`
