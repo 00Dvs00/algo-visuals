@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import LinkedListVisualizer from './LinkedListVisualizer';
 import { createLinkedList } from './ListNode';
 import StepCounter from './StepVisualization';
+
 
 const PalindromeOfAList = () => {
   const [inputValues, setInputValues] = useState('1,2,3,4,3,2,1');
@@ -16,7 +18,6 @@ const PalindromeOfAList = () => {
     let stepCount = 0;
     let values = [];
     let reversedArrows = new Set();
-
     let current = head;
     while (current) {
       values.push(current.val);
@@ -110,8 +111,9 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
       secondHalfOriginalValues = values.slice(middleMarkerIndex + 1);
     }
 
+    let showForwardArrowArray = new Array(secondHalfOriginalValues.length).fill(true);
+
     function createReversalStep({ type, i, currentVal, nextVal, prevVal }) {
-      const showArrowArray = new Array(secondHalfOriginalValues.length).fill(true);
       const step = {
         id: stepCount++,
         list: head,
@@ -139,6 +141,7 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
             description: `Initialize Pointers : Prev = null , Current = head, next = head.`,
             pointers2: { prev: null, "current, next" : i},
             highlightNodes2: [i],
+            showArrow: [...showForwardArrowArray],
             arrowDirection : arrowDirections,
             code: `next = current.next;`,
             code2: `// Storing: next = ${nextVal || 'null'}`
@@ -150,6 +153,7 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
             description: `Iteration ${i + 1}a: Store next pointer before breaking the link.`,
             pointers2: { prev: i > 0 ? i - 1 : null, current: i, next: nextVal ? i + 1 : null, storing: true },
             highlightNodes2: [i, ...(nextVal ? [i + 1] : [])],
+            showArrow: [...showForwardArrowArray],
             arrowDirection : arrowDirections,
             code: `next = current.next;`,
             code2: `// Storing: next = ${nextVal || 'null'}`
@@ -157,27 +161,28 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
           break;
         
         case 'break_link':
-          showArrowArray[i] = false;
+          showForwardArrowArray[i] = false;
 
           Object.assign(step, {
             description: `Iteration ${i + 1}b: Break the current link (remove arrow from ${currentVal}).`,
             pointers2: { prev: i > 0 ? i - 1 : null, current: i, next: nextVal ? i + 1 : null, breaking: true },
             highlightNodes2: [i],
-            showArrow: showArrowArray, 
+            showArrow: [...showForwardArrowArray],
             arrowDirection: arrowDirections,
             code: `// About to break: current.next`,
             code2: `// Breaking link from ${currentVal} to ${nextVal || 'null'}`
           });
           break;
-
+          
         case 'reverse_link':
           reversedArrows.add(i);
           arrowDirections[i] = 'reverse';
+          showForwardArrowArray[i-1] = true;
           Object.assign(step, {
             description: `Iteration ${i + 1}b: Reverse link.`,
             pointers2: { prev: i > 0 ? i - 1 : null, current: i, next: nextVal ? i + 1 : null, reversing: true },
             highlightNodes2: [i, ...(prevVal ? [i - 1] : [])],
-            showArrow: showArrowArray,
+            showArrow: [...showForwardArrowArray],
             arrowDirection : arrowDirections,
             code: `current.next = prev;`,
             code2: `// Reversing: ${currentVal}.next = ${prevVal || 'null'}`
@@ -189,6 +194,7 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
             description: `Iteration ${i + 1}c: Move prev pointer forward.`,
             pointers2: { prev: i, current: i, next: nextVal ? i + 1 : null, movingPrev: true },
             highlightNodes2: [i],
+            showArrow: [...showForwardArrowArray],
             arrowDirection : arrowDirections,
             code: `prev = current;`,
             code2: `// prev = ${currentVal}`
@@ -199,6 +205,7 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
           Object.assign(step, {
             description: `Iteration ${i + 1}d: Move current pointer forward.`,
             pointers2: { prev: i, current: nextVal ? i + 1 : null, next: nextVal ? i + 1 : null, movingCurrent: true },
+            showArrow: [...showForwardArrowArray],
             highlightNodes2: nextVal ? [i + 1] : [],
             arrowDirection : arrowDirections
           });
@@ -310,10 +317,16 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
 
   const currentStepData = steps[currentStep] || {};
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+    <div className="realtive min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
+          <Link 
+            to="/"
+            className="absolute top-4 left-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+          >
+            &larr; Back to Algorithms
+          </Link>
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
             Palindrome Linked List Visualizer
           </h1>
