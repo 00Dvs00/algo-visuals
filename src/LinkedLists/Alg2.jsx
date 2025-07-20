@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import LinkedListVisualizer from "./LinkedListVisualizer";
 import { createMinHeap } from "./MinHeap";
 import { ListNode, createLinkedList } from "./ListNode";
+import StepCounter from "./StepVisualization";
 
 const MergeKLinkedList = () => {
   const [inputValues, setInputValues] = useState('');
@@ -15,20 +16,26 @@ const MergeKLinkedList = () => {
   const createVisualizationSteps = (headArray) => {
     let stepCount = 0;
     let dummy = new ListNode();
+    steps.push({
 
-    headArray.forEach((head,index) => {
-      if(head){
+    });
+    for (let i = 0; i < headArray.length; i++) {
+      const head = headArray[i];
+      minHeap.current.insert(head);
+      if (head) {
         steps.push({
           id: stepCount++,
           list: head,
           highlightNodes: [0],
-          pointers: {"head" : 0},
-          resultHead : dummy.next,
+          pointers: { "head": 0 },
+          resultHead: dummy.next,
+          heapSnapshot: minHeap.current.getHeap().map(n => n.val)
         });
       }
-    });
+    }
     return steps;
   }
+
 
   const handleCreateList = () => {
     const values = inputValues.split(',').map(v => parseInt(v.trim())).filter(v => !isNaN(v));
@@ -168,6 +175,12 @@ const MergeKLinkedList = () => {
           </div>
         </div>
 
+        <StepCounter 
+          currentStep = {currentStep}
+          steps={steps}
+          currentStepData={currentStepData}
+        />
+
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <h4 className="text-xl font-semibold text-gray-800 mb-4">
             Linked List Visualization
@@ -190,16 +203,19 @@ const MergeKLinkedList = () => {
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
             <h4 className="text-xl font-semibold text-gray-800 mb-4">Min Heap</h4>
             <div className="flex gap-4 flex-wrap">
-              {minHeap.current.getHeap().map((node, index) => (
-                <div
-                  key={index}
-                  className="px-4 py-2 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg shadow"
-                >
-                  {node.val}
+              {(currentStepData.heapSnapshot || []).map((val, index) => (
+                <div key={index} className="px-4 py-2 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-lg shadow">
+                  {val}
                 </div>
               ))}
+
+              {(!currentStepData.heapSnapshot || currentStepData.heapSnapshot.length === 0) && (
+                <p className="text-gray-500">Heap is empty.</p>
+              )}
             </div>
           </div>
+
+
 
 
           <div className="bg-gray-50 rounded-lg p-4">

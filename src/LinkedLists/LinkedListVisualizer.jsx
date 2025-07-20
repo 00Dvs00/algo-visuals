@@ -1,31 +1,39 @@
 
 import VisualNode from './VisualNode';
 
-const LinkedListVisualizer = ({ list, highlightNodes = [], pointers = {} }) => {
-  const renderList = () => { 
+const LinkedListVisualizer = ({ list, highlightNodes = [], pointers = {}, arrowDirection = 'normal', showArrow = true }) => {
+  const renderList = () => {
     const nodes = [];
     let current = list;
     let index = 0;
-    
+
     while (current) {
       const isHighlighted = highlightNodes.includes(index);
       const label = Object.keys(pointers).find(key => pointers[key] === index);
-      
+    
+      const nodeArrowDirection = Array.isArray(arrowDirection) 
+          ? arrowDirection[index] || 'normal'
+          : arrowDirection;
+
+      const shouldShowArrow = Array.isArray(showArrow) 
+        ? (showArrow[index] !== false && current.next !== null)
+        : (showArrow !== false && current.next !== null);
+
       nodes.push(
         <VisualNode
           key={index}
           value={current.val}
-          showArrow={current.next !== null}
+          showArrow={shouldShowArrow}
           highlight={isHighlighted}
           label={label}
-          arrowDirection={''}
+          arrowDirection={nodeArrowDirection}
         />
       );
-      
+
       current = current.next;
       index++;
     }
-    
+
     return nodes;
   };
 
