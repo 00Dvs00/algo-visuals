@@ -36,7 +36,7 @@ const VisualNode = ({
         </div>
       </div>
 
-      {showArrow && !isNull && (
+      {showArrow && (
         <div className="relative mx-2">
           <div className="w-8 h-0.5 bg-gray-700"></div>
           {arrowDirection === 'reverse' ? (

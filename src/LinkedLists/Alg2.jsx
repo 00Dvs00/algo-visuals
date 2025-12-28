@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from 'react-router-dom';
 import LinkedListVisualizer from "./LinkedListVisualizer";
 import { createMinHeap } from "./MinHeap";
 import { ListNode, createLinkedList } from "./ListNode";
@@ -16,9 +17,8 @@ const MergeKLinkedList = () => {
   const createVisualizationSteps = (headArray) => {
     let stepCount = 0;
     let dummy = new ListNode();
-    steps.push({
-
-    });
+    console.log(minHeap.current.getHeap)
+    steps.push({});
     for (let i = 0; i < headArray.length; i++) {
       const head = headArray[i];
       minHeap.current.insert(head);
@@ -109,6 +109,12 @@ const MergeKLinkedList = () => {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
+            <Link 
+              to="/LinkedList"
+              className="absolute top-4 left-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+            >
+              &larr; Back to Algorithms
+            </Link>
             <h1 className="text-4xl font-bold text-gray-800 mb-2">
               Merge K Linked List Visualizer
             </h1>

@@ -112,8 +112,12 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
     }
 
     let showForwardArrowArray = new Array(secondHalfOriginalValues.length).fill(true);
+    // Last node shouldn't have an arrow pointing to null
+    if (showForwardArrowArray.length > 0) {
+      showForwardArrowArray[showForwardArrowArray.length - 1] = false;
+    }
 
-    function createReversalStep({ type, i, currentVal, nextVal, prevVal }) {
+    function createReversalStep({ type, i, currentVal, nextVal, prevVal, prevIndex }) {
       const step = {
         id: stepCount++,
         list: head,
@@ -129,85 +133,99 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
 
       const arrowDirections = new Array(secondHalfOriginalValues.length).fill('normal');
 
+      // Apply all previously reversed arrows
       reversedArrows.forEach(index => {
-      if (index < arrowDirections.length) {
+        if (index < arrowDirections.length) {
           arrowDirections[index] = 'reverse';
         }
       });
       
+      // Show NULL box always, but only show prev label when prev is actually null
+      const showNull = {};
+      // For move_pointers, prev has already moved to a node, so don't label NULL with "prev"
+      if (prevIndex === null && type !== 'move_pointers') {
+        showNull.prev = true; // Only label NULL with "prev" when prev is actually null
+      }
+      // Check if node 0 has been reversed (to show arrow from NULL)
+      if (reversedArrows.size > 0 || type === 'reverse_link' && i === 0) {
+        showNull.showReversedToNull = true;
+      }
+      // Always show the NULL box (even without label) after first reversal
+      if (reversedArrows.size > 0 || (type === 'reverse_link' && i === 0) || type === 'move_pointers') {
+        showNull.alwaysShow = true;
+      }
+
       switch (type) {
         case 'Initialize':
           Object.assign(step, {
-            description: `Initialize Pointers : Prev = null , Current = head, next = head.`,
-            pointers2: { prev: null, "current, next" : i},
-            highlightNodes2: [i],
+            description: `Initialize pointers: prev = null, current = head, next = null`,
+            pointers2: { prev: null, current: 0 },
+            highlightNodes2: [0],
             showArrow: [...showForwardArrowArray],
-            arrowDirection : arrowDirections,
-            code: `next = current.next;`,
-            code2: `// Storing: next = ${nextVal || 'null'}`
+            arrowDirection: arrowDirections,
+            showNull: showNull,
+            code: `ListNode prev = null;\nListNode current = head;\nListNode next = null;`,
+            code2: `// Starting reversal from head`
           });
           break;
 
         case 'store_next':
           Object.assign(step, {
-            description: `Iteration ${i + 1}a: Store next pointer before breaking the link.`,
-            pointers2: { prev: i > 0 ? i - 1 : null, current: i, next: nextVal ? i + 1 : null, storing: true },
+            description: `Iteration ${i + 1}: Store next = current.next (${nextVal || 'null'})`,
+            pointers2: { prev: prevIndex, current: i, next: nextVal ? i + 1 : null },
             highlightNodes2: [i, ...(nextVal ? [i + 1] : [])],
             showArrow: [...showForwardArrowArray],
-            arrowDirection : arrowDirections,
+            arrowDirection: arrowDirections,
+            showNull: showNull,
             code: `next = current.next;`,
-            code2: `// Storing: next = ${nextVal || 'null'}`
+            code2: `// Save reference: next = ${nextVal || 'null'}`
           });
           break;
         
-        case 'break_link':
-          showForwardArrowArray[i] = false;
-
+        case 'reverse_link':
+          // Reverse the pointer: current.next = prev
+          // First, disable the forward arrow from current (if it exists)
+          if (i < showForwardArrowArray.length) {
+            showForwardArrowArray[i] = false;
+          }
+          
+          if (i === 0) {
+            // First node points to NULL - don't modify arrow[0], just show NULL box
+            // The arrow from node 0 to node 1 should remain broken (already set to false)
+            // NULL box will show with its reverse arrow
+            reversedArrows.add('node0-to-null'); // Flag that node 0 has been reversed
+          } else {
+            // Node i points back to node i-1
+            // The arrow at index i-1 connects nodes i-1 and i
+            // Enable and reverse this arrow
+            arrowDirections[i - 1] = 'reverse';
+            showForwardArrowArray[i - 1] = true;
+            reversedArrows.add(i - 1);
+          }
+          
           Object.assign(step, {
-            description: `Iteration ${i + 1}b: Break the current link (remove arrow from ${currentVal}).`,
-            pointers2: { prev: i > 0 ? i - 1 : null, current: i, next: nextVal ? i + 1 : null, breaking: true },
-            highlightNodes2: [i],
+            description: `Iteration ${i + 1}: Reverse link - current.next = prev (${prevVal || 'null'})`,
+            pointers2: { prev: prevIndex, current: i, next: nextVal ? i + 1 : null },
+            highlightNodes2: [i, ...(prevIndex !== null ? [prevIndex] : [])],
             showArrow: [...showForwardArrowArray],
             arrowDirection: arrowDirections,
-            code: `// About to break: current.next`,
-            code2: `// Breaking link from ${currentVal} to ${nextVal || 'null'}`
-          });
-          break;
-          
-        case 'reverse_link':
-          reversedArrows.add(i);
-          arrowDirections[i] = 'reverse';
-          showForwardArrowArray[i-1] = true;
-          Object.assign(step, {
-            description: `Iteration ${i + 1}b: Reverse link.`,
-            pointers2: { prev: i > 0 ? i - 1 : null, current: i, next: nextVal ? i + 1 : null, reversing: true },
-            highlightNodes2: [i, ...(prevVal ? [i - 1] : [])],
-            showArrow: [...showForwardArrowArray],
-            arrowDirection : arrowDirections,
+            showNull: showNull,
             code: `current.next = prev;`,
-            code2: `// Reversing: ${currentVal}.next = ${prevVal || 'null'}`
+            code2: `// ${currentVal}.next now points to ${prevVal || 'null'}`
           });
-          break; 
-
-        case 'move_prev':
-          Object.assign(step, {
-            description: `Iteration ${i + 1}c: Move prev pointer forward.`,
-            pointers2: { prev: i, current: i, next: nextVal ? i + 1 : null, movingPrev: true },
-            highlightNodes2: [i],
-            showArrow: [...showForwardArrowArray],
-            arrowDirection : arrowDirections,
-            code: `prev = current;`,
-            code2: `// prev = ${currentVal}`
-          }); 
           break;
 
-        case 'move_current':
+        case 'move_pointers':
+          // Move both pointers: prev = current, current = next
           Object.assign(step, {
-            description: `Iteration ${i + 1}d: Move current pointer forward.`,
-            pointers2: { prev: i, current: nextVal ? i + 1 : null, next: nextVal ? i + 1 : null, movingCurrent: true },
-            showArrow: [...showForwardArrowArray],
+            description: `Iteration ${i + 1}: Move pointers - prev = current, current = next`,
+            pointers2: { prev: i, current: nextVal ? i + 1 : null },
             highlightNodes2: nextVal ? [i + 1] : [],
-            arrowDirection : arrowDirections
+            showArrow: [...showForwardArrowArray],
+            arrowDirection: arrowDirections,
+            showNull: showNull,
+            code: `prev = current;\ncurrent = next;`,
+            code2: `// prev = ${currentVal}, current = ${nextVal || 'null'}`
           });
           break;
       }
@@ -234,17 +252,26 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
     }
 
     if (secondHalfOriginalValues.length > 0) {
-      steps.push(createReversalStep({ type: 'Initialize', i : 0, currentVal : secondHalfOriginalValues[0], nextVal : null, prevVal : null }));
+      // Initialize step
+      steps.push(createReversalStep({ 
+        type: 'Initialize', 
+        i: 0, 
+        currentVal: secondHalfOriginalValues[0], 
+        nextVal: secondHalfOriginalValues[1] || null, 
+        prevVal: null,
+        prevIndex: null
+      }));
+      
+      // Reversal loop
       for (let i = 0; i < secondHalfOriginalValues.length; i++) {
         const currentVal = secondHalfOriginalValues[i];
         const nextVal = secondHalfOriginalValues[i + 1] || null;
-        const prevVal = secondHalfOriginalValues[i - 1] || null;
+        const prevVal = i > 0 ? secondHalfOriginalValues[i - 1] : null;
+        const prevIndex = i > 0 ? i - 1 : null;
 
-        steps.push(createReversalStep({ type: 'store_next', i, currentVal, nextVal, prevVal }));
-        steps.push(createReversalStep({ type: 'break_link', i, currentVal, nextVal, prevVal }));
-        steps.push(createReversalStep({ type: 'reverse_link', i, currentVal, nextVal, prevVal }));
-        steps.push(createReversalStep({ type: 'move_prev', i, currentVal, nextVal, prevVal }));
-        steps.push(createReversalStep({ type: 'move_current', i, currentVal, nextVal, prevVal }));
+        steps.push(createReversalStep({ type: 'store_next', i, currentVal, nextVal, prevVal, prevIndex }));
+        steps.push(createReversalStep({ type: 'reverse_link', i, currentVal, nextVal, prevVal, prevIndex }));
+        steps.push(createReversalStep({ type: 'move_pointers', i, currentVal, nextVal, prevVal, prevIndex }));
       }
       
       const reversedSecondListHead = createLinkedList([...secondHalfOriginalValues].reverse());
@@ -322,7 +349,7 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
         {/* Header */}
         <div className="text-center mb-8">
           <Link 
-            to="/"
+            to="/LinkedList"
             className="absolute top-4 left-4 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300"
           >
             &larr; Back to Algorithms
@@ -422,6 +449,7 @@ ListNode secondHalfReversed = reverseLinkedList(secondHalfStartNode);`,
                 pointers={currentStepData.pointers2}
                 arrowDirection={currentStepData.arrowDirection}
                 showArrow={currentStepData.showArrow}
+                showNull={currentStepData.showNull}
               />
               </div>
             </div>
